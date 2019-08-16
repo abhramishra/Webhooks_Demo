@@ -57,6 +57,12 @@ Step 4: Go to routes.rb and add this code
 Step 5: Run this command in your terminal to scafold
 
 	$ rails g scaffold Customer info:json shopify_customer_id:string
+	
+  Inside the app/controller/customers_controller.rb edit this code
+
+	class CustomersController < ShopifyApp::AuthenticatedController
+
+
 
 Step 6: In app/view/customers/index.html.erb edit these line of codes
 

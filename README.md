@@ -42,6 +42,8 @@ end
 
 Step 3: Go to shopify_app.rb and add this code there
 	
+	config.scope = "read_products, read_customers"
+	
 	config.webhooks = [
     {topic: 'customers/create', address: "https://c72493d4.ngrok.io/webhooks/customers/receive_customer_params"}
   ]

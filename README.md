@@ -1,24 +1,72 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+**************************************************************
+Customer create webhooks -  When a new customer create an account in your store, using web hooks it will show in your rails app (embedded app).
 
-Things you may want to cover:
+**************************************************************
+Step 1: Create a rails app and configure all the necessary thing to connect your app to Shopify app.
 
-* Ruby version
+	$ rails new WebhooksDemo -d postgresql
+	$ rails db:create
+	$ rails db:migrate
+	$ rails g shopify_app —api_key <YOUR APP API KEY> —secret <YOUR APP SECRET KEY>
 
-* System dependencies
+Step 2: go to controller and create a new folder called “webhooks” . Inside this folder create one controller name “customers_controller.rb”.
+	   Add these lines of code inside customers_controller.rb  (located in app/controller/webhooks/customers_controller.rb)
 
-* Configuration
+	class Webhooks::CustomersController < ApplicationController
 
-* Database creation
+    # basic setup for webhooks -----------
+    #include Webhooks::WebhookVerification
+    skip_before_action :verify_authenticity_token, raise: false
+    skip_before_action :verify_webhooks, raise: false
+    #  include ApplicationHelper
 
-* Database initialization
+    # defind method for creating new customer -----------
+    def receive_customer_params
+        params.permit!
+        head :ok
+        @customer = Customer.new
+        @customer.info = params     # storing json data in info column
+        @customer.shopify_customer_id = params["id"]
+        @customer.save
+        #binding.pry
+    end
 
-* How to run the test suite
+end
+ 
 
-* Services (job queues, cache servers, search engines, etc.)
 
-* Deployment instructions
 
-* ...
+
+
+Step 3: Go to shopify_app.rb and add this code there
+	
+	config.webhooks = [
+    {topic: 'customers/create', address: "https://c72493d4.ngrok.io/webhooks/customers/receive_customer_params"}
+  ]
+
+	note: ‘customer/create’ this customer create webhooks you can check here - https://help.shopify.com/en/api/reference/events/webhook
+
+Step 4: Go to routes.rb and add this code
+
+	post '/webhooks/customers/receive_customer_params', to: 'webhooks/customers#receive_customer_params'
+
+Step 5: Run this command in your terminal to scafold
+
+	$ rails g scaffold Customer info:json shopify_customer_id:string
+
+Step 6: In app/view/customers/index.html.erb edit these line of codes
+
+	<tr>
+        <td><%= customer.info["email"] %></td>  # fetching customer email from hash data
+        <td> <%= customer.info["first_name"] %></td>
+        <td><%= customer.info["last_name"] %></td>
+        <td><%= link_to 'Show', customer %></td>
+        <td><%= link_to 'Edit', edit_customer_path(customer) %></td>
+        <td><%= link_to 'Destroy', customer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+
+
+
+
